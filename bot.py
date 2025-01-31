@@ -56,6 +56,7 @@ def format_text_table(data):
         columns = row.find_all("td")
         if columns:
             load_id = columns[0].text.strip()
+            tender_id = columns[1].text.strip()
             if load_id in sent_load_ids:
                 continue  # Skip already sent loads
 
@@ -88,6 +89,7 @@ def format_text_table(data):
 
             message = (
                 f"*Load ID:* [{load_id}]\n"
+                f"*Ternder ID:* {tender_id}\n"
                 f"*From:* {from_location}\n"
                 f"*To:* {to_location}\n"
                 f"*Date:* {date}\n"
