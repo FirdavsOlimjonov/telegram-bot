@@ -1,19 +1,25 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
-from database import is_admin, add_admin, remove_admin, get_all_admins
+
+from database import add_admin, remove_admin, get_all_admins, update_admin_expiration
 
 router = Router()
 monitoring_task = None  # Placeholder for monitoring control
+
+ADMIN_ID = {626105641, 487479968}
 
 
 @router.message(Command("start"))
 async def start_handler(message: Message):
     """Handles the /start command and sets up admin menu."""
-    if await is_admin(message.from_user.id):
+    if message.from_user.id in ADMIN_ID:
         keyboard = ReplyKeyboardMarkup(
             keyboard=[
                 [KeyboardButton(text="List Admins")],  # Fixed capitalization
+                [KeyboardButton(text="/addadmin")],  # Fixed capitalization
+                [KeyboardButton(text="/removeadmin")],  # Fixed capitalization
+                [KeyboardButton(text="/updateadmin")],  # Fixed capitalization
             ],
             resize_keyboard=True
         )
@@ -25,7 +31,7 @@ async def start_handler(message: Message):
 @router.message(Command("addadmin"))
 async def add_admin_handler(message: Message):
     """Handles the /addadmin command."""
-    if not await is_admin(message.from_user.id):
+    if message.from_user.id not in ADMIN_ID:
         await message.answer("You are not authorized to use this command.")
         return
 
@@ -41,10 +47,27 @@ async def add_admin_handler(message: Message):
     await message.answer(f"✅ User {new_admin_id} ('{new_admin_name}') added as admin.")
 
 
+@router.message(Command("updateadmin"))
+async def handle_update_admin(message: Message):
+    if message.from_user.id not in ADMIN_ID:
+        await message.answer("You are not authorized to use this command.")
+        return
+
+    args = message.text.split()
+    if len(args) < 2:
+        await message.answer("⚠️ Usage: /updateadmin <user_id>")
+        return
+
+    user_id = int(args[1])
+
+    response = await update_admin_expiration(user_id)
+    await message.answer(response)
+
+
 @router.message(Command("removeadmin"))
 async def remove_admin_handler(message: Message):
     """Handles the /removeadmin command."""
-    if not await is_admin(message.from_user.id):
+    if message.from_user.id not in ADMIN_ID:
         await message.answer("You are not authorized to use this command.")
         return
 
@@ -70,7 +93,7 @@ async def remove_admin_handler(message: Message):
 @router.message(lambda message: message.text.lower().strip() == "list admins")
 async def list_admins_handler(message: Message):
     """Handles the "List Admins" button or command."""
-    if not await is_admin(message.from_user.id):
+    if message.from_user.id not in ADMIN_ID:
         await message.answer("You are not authorized to use this command.")
         return
 
