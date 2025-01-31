@@ -5,6 +5,7 @@ from datetime import datetime
 import pytz
 import requests
 from aiogram import Bot, Dispatcher, types
+from aiogram.exceptions import TelegramNetworkError
 from aiogram.filters import Command
 from aiogram.types import Message
 from bs4 import BeautifulSoup
@@ -185,6 +186,18 @@ async def set_default_commands(botsetter: Bot):
     await botsetter.set_my_commands(commands)
 
 
+async def notify_admins(error_message):
+    """Notify all admins about a critical bot error."""
+    admins = await get_all_admins()
+    admin_ids = [admin['id'] for admin in admins]
+
+    for admin_id in admin_ids:
+        try:
+            await bot.send_message(admin_id, f"🚨 Bot Error:\n\n{error_message}")
+        except Exception as e:
+            logging.error(f"❌ Failed to notify admin {admin_id}: {e}")
+
+
 async def main():
     """Initialize the bot, database, and start monitoring."""
     await init_db()
@@ -194,7 +207,17 @@ async def main():
     # # Start monitoring the website
     # asyncio.create_task(monitor_website())
 
-    await dp.start_polling(bot)
+    while True:
+        try:
+            await dp.start_polling(bot)
+        except TelegramNetworkError as e:
+            logging.error(f"⚠️ Network error: {e}")
+            await notify_admins(f"⚠️ Network error occurred: {e}")
+            await asyncio.sleep(5)  # Wait before retrying
+        except Exception as e:
+            logging.error(f"❌ Unexpected error: {e}")
+            await notify_admins(f"❌ Unexpected error:\n\n{e}")
+            await asyncio.sleep(5)  # Wait before retrying
 
 
 if __name__ == "__main__":
