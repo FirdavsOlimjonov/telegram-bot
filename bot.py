@@ -1,17 +1,16 @@
 import asyncio
 import logging
+import sys
 from datetime import datetime
 
 import pytz
 import requests
 from aiogram import Bot, Dispatcher, types
 from aiogram.exceptions import TelegramNetworkError
-from aiogram.filters import Command
-from aiogram.types import Message
 from bs4 import BeautifulSoup
 
 from config import TOKEN
-from database import get_all_admins, init_db, is_admin, check_expired_admins
+from database import get_all_admins, init_db, check_expired_admins
 from handler import router
 
 # Enable logging
@@ -203,6 +202,11 @@ async def scheduled_admin_check():
     while True:
         await check_expired_admins(bot)
         await asyncio.sleep(86400)  # 24 hours
+
+
+def exit_program():
+    print("Exiting the program...")
+    sys.exit(0)
 
 
 async def main():
