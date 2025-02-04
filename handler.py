@@ -2,7 +2,6 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
-from bot import exit_program
 from database import add_admin, remove_admin, get_all_admins, update_admin_expiration
 
 router = Router()
@@ -11,11 +10,11 @@ monitoring_task = None  # Placeholder for monitoring control
 ADMIN_ID = {626105641, 487479968}
 
 
-@router.message(Command("stopworld"))
-async def start_handler(message: Message):
-    """Handles the /stopworld command and sets up admin menu."""
-    if message.from_user.id in ADMIN_ID:
-        exit_program()
+# @router.message(Command("stopworld"))
+# async def start_handler(message: Message):
+#     """Handles the /stopworld command and sets up admin menu."""
+#     if message.from_user.id in ADMIN_ID:
+#         exit_program()
 
 
 @router.message(Command("start"))
