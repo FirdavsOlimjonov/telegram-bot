@@ -3,8 +3,10 @@ import logging
 
 import pytz
 import requests
+from aiogram.filters import Command
 from aiogram import Bot, Dispatcher, types
 from aiogram.exceptions import TelegramNetworkError
+from aiogram.types import Message
 from bs4 import BeautifulSoup
 
 from config import TOKEN
@@ -178,6 +180,16 @@ async def notify_admins(error_message):
 # def exit_program():
 #     print("Exiting the program...")
 #     sys.exit(0)
+
+
+# @router.message(Command("clear"))
+# async def remove_admin_handler(message: Message):
+#     """Handles the /clear command."""
+#     if message.from_user.id not in ADMIN_ID:
+#         await message.answer("You are not authorized to use this command.")
+#         return
+#
+#     sent_load_ids = set()
 
 
 async def main():
