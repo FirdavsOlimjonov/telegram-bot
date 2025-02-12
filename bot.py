@@ -25,8 +25,8 @@ URL = "https://logistics-edi.azurewebsites.net"
 LOGIN_URL = URL + "/php/login.php"
 EMAIL = "rrood@mercer-trans.com"
 PASSWORD = "Dispatch24!"
-TOKEN = "ZEFuT0Vyd29VYUJrTUtXUTJvMkNMNW50MUJIZWVCQTB1dE5kVnpheFAxMHxLLU14UjhfQzd5RXwxNzM4NTYyNDUx"
-SESSION_ID = "d820d1e71e16c835204fcecf14b4caf8"
+TOKEN = "eXh4OHFjaThuOTlaakM2WHpyUDJPeVlUM0lKMy1zNjJnYzd0TkpHS0VEWXxJVmQ2NFVxNnhNTXwxNzM5MzY1MjI2"
+SESSION_ID = "5d4f7f2b3b9d9d23fa544aef2fb6f7bc"
 
 # Define the UTC+5 timezone
 UTC = pytz.utc
