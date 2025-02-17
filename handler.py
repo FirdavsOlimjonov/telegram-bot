@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
-from database import add_admin, remove_admin, get_all_admins, update_admin_expiration
+from database import add_admin, remove_admin, get_all_admins, update_admin_expiration, get_admin_by_id
 
 router = Router()
 monitoring_task = None  # Placeholder for monitoring control
@@ -32,7 +34,13 @@ async def start_handler(message: Message):
         )
         await message.answer("Welcome, Admin!", reply_markup=keyboard)
     else:
-        await message.answer("Hello!")
+        admin = await get_admin_by_id(message.from_user.id)  # Await the coroutine
+        if admin:
+            await message.answer(
+                f"Hello {admin['name']} (ID: {admin['id']} expiration date: {admin['expiration_date'].strftime('%Y-%m-%d')})"
+            )
+        else:
+            await message.answer("You are not an admin.")
 
 
 @router.message(Command("addadmin"))
@@ -108,5 +116,8 @@ async def list_admins_handler(message: Message):
     if not admins:
         await message.answer("No admins found.")
     else:
-        admin_list = "\n".join(f"🔹 {admin['name']} (ID: {admin['id']})" for admin in admins)
+        admin_list = "\n".join(
+            f"🔹 {admin['name']} (ID: {admin['id']} expiration date: {admin['expiration_date'].strftime('%Y-%m-%d')})"
+            for admin in admins
+        )
         await message.answer(f"📜 Current Admins:\n{admin_list}")

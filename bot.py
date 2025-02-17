@@ -1,12 +1,11 @@
 import asyncio
 import logging
+import time
 
 import pytz
 import requests
-from aiogram.filters import Command
 from aiogram import Bot, Dispatcher, types
 from aiogram.exceptions import TelegramNetworkError
-from aiogram.types import Message
 from bs4 import BeautifulSoup
 
 from config import TOKEN
@@ -25,8 +24,13 @@ URL = "https://logistics-edi.azurewebsites.net"
 LOGIN_URL = URL + "/php/login.php"
 EMAIL = "rrood@mercer-trans.com"
 PASSWORD = "Dispatch24!"
-TOKEN = "eXh4OHFjaThuOTlaakM2WHpyUDJPeVlUM0lKMy1zNjJnYzd0TkpHS0VEWXxJVmQ2NFVxNnhNTXwxNzM5MzY1MjI2"
-SESSION_ID = "5d4f7f2b3b9d9d23fa544aef2fb6f7bc"
+TOKEN = "ZEFuT0Vyd29VYUJrTUtXUTJvMkNMNW50MUJIZWVCQTB1dE5kVnpheFAxMHxLLU14UjhfQzd5RXwxNzM4NTYyNDUx"
+SESSION_ID = "d820d1e71e16c835204fcecf14b4caf8"
+
+session = requests.Session()  # Persistent session
+session.cookies.set("PHPSESSID", SESSION_ID)
+last_login_attempt = 0
+login_interval = 600  # 1 hour in seconds
 
 # Define the UTC+5 timezone
 UTC = pytz.utc
@@ -39,36 +43,43 @@ ADMIN_ID = {626105641, 487479968}
 
 
 def fetch_website_data():
-    """Fetch the latest data from the website."""
-    session = requests.Session()
-    session.cookies.set("PHPSESSID", SESSION_ID)
+    global last_login_attempt, session
 
-    login_data = {
-        "email": EMAIL,
-        "password": PASSWORD,
-        "csrf_token": "",
-    }
-
-    response = session.post(LOGIN_URL, data=login_data)
-
-    if response.text.strip() == "0":
-        protected_response = session.get(URL)
-        soup = BeautifulSoup(protected_response.text, "html.parser")
-        return str(soup.find('tbody'))
+    current_time = time.time()
+    if current_time - last_login_attempt < login_interval:
+        logging.info("⏳ Skipping login due to rate limiting.")
     else:
-        page = session.get(URL + '/login')
-        soup = BeautifulSoup(page.text, "html.parser")
-        token = soup.find('meta', {'name': 'csrf_token'}).get('content', '')
-        login_data["csrf_token"] = token
-        response = session.post(LOGIN_URL, data=login_data)
+        try:
+            # Re-login only if needed
+            logging.info("🔐 Logging in to the website...")
+            login_data = {
+                "email": EMAIL,
+                "password": PASSWORD,
+                "csrf_token": TOKEN,
+            }
+            login_response = session.post(LOGIN_URL, data=login_data)
+            if login_response.text.strip() != "0":
+                logging.error("❌ Login failed. Check credentials.")
+                return None
 
-        if response.text.strip() == "0":
-            protected_response = session.get(URL)
-            soup = BeautifulSoup(protected_response.text, "html.parser")
-            return str(soup.find('tbody'))
-        else:
-            logging.error("Login failed. Check credentials or session ID.")
+            last_login_attempt = current_time
+        except Exception as e:
+            logging.error(f"❌ Error during login: {e}")
             return None
+
+    try:
+        # Fetch data
+        response = session.get(URL)
+        if "login" in response.url:  # Check if redirected to login page
+            logging.info("Session expired. Re-logging in.")
+            last_login_attempt = 0  # Force re-login
+            return fetch_website_data()
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        return str(soup.find('tbody'))
+    except Exception as e:
+        logging.error(f"❌ Error fetching website data: {e}")
+        return None
 
 
 def format_text_table(data):

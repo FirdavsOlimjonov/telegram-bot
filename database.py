@@ -92,6 +92,24 @@ async def get_all_admins():
                 result]
 
 
+# Get admin details by user ID
+async def get_admin_by_id(user_id):
+    async with pool.acquire() as conn:
+        result = await conn.fetchrow("""
+            SELECT id, name, expiration_date 
+            FROM admins 
+            WHERE id = $1
+        """, user_id)
+        if result:
+            return {
+                "id": result["id"],
+                "name": result["name"],
+                "expiration_date": result["expiration_date"]
+            }
+        else:
+            return None  # Return None if the admin doesn't exist
+
+
 # Extend admin expiration (Only ADMIN_ID can use this)
 async def update_admin_expiration(user_id):
     new_expiration = datetime.now(UTC) + timedelta(days=30)  # Extend by 1 month
