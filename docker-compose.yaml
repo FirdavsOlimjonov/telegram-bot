@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:12
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=$postgres
+
+  bot:
+    build:
+      context: .
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - .env
+    command: ["python", "bot.py"]
+
+volumes:
+  app-db-data:
