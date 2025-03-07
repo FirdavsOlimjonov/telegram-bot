@@ -32,3 +32,4 @@ services:
 
 volumes:
   app-db-data:
+    external: true
