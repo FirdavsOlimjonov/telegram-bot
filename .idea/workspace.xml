@@ -20,12 +20,12 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "FirdavsOlimjonov"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;FirdavsOlimjonov&quot;
   }
-}]]></component>
+}</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/FirdavsOlimjonov/telegram-bot.git&quot;,
@@ -119,7 +119,11 @@
       <workItem from="1741238994632" duration="1129000" />
       <workItem from="1741240259464" duration="1368000" />
       <workItem from="1741242008218" duration="2547000" />
-      <workItem from="1741319848133" duration="1324000" />
+      <workItem from="1741319848133" duration="2585000" />
+      <workItem from="1741669879502" duration="1279000" />
+      <workItem from="1741689877695" duration="595000" />
+      <workItem from="1741698923764" duration="1000" />
+      <workItem from="1741751687919" duration="357000" />
     </task>
     <task id="LOCAL-00001" summary="sss">
       <option name="closed" value="true" />
@@ -161,7 +165,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741254857187</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="db">
+      <option name="closed" value="true" />
+      <created>1741331667534</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1741331667535</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
