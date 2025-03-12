@@ -40,7 +40,7 @@ UTC_PLUS_5 = pytz.timezone("Asia/Yekaterinburg")  # Example for UTC+5
 # Set to track already sent Load IDs
 sent_load_ids = set()
 previous_data = None
-ADMIN_ID = {626105641, 487479968}
+ADMIN_ID = {0}
 
 
 def fetch_website_data():
