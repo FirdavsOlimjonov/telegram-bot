@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+import os
 
 import pytz
 import requests
@@ -11,9 +12,6 @@ from bs4 import BeautifulSoup
 from config import TOKEN
 from database import get_all_admins, init_db
 from handler import router
-import certifi
-
-print(certifi.where())
 
 # Enable logging
 logging.basicConfig(level=logging.INFO)
@@ -22,13 +20,13 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Website URL to monitor
-URL = "https://logistics-edi.azurewebsites.net"
-LOGIN_URL = URL + "/php/login.php"
-EMAIL = "rrood@mercer-trans.com"
-PASSWORD = "Dispatch24!"
-TOKEN = "ZEFuT0Vyd29VYUJrTUtXUTJvMkNMNW50MUJIZWVCQTB1dE5kVnpheFAxMHxLLU14UjhfQzd5RXwxNzM4NTYyNDUx"
-SESSION_ID = "d820d1e71e16c835204fcecf14b4caf8"
+# Website credentials and settings
+URL = os.getenv("URL")
+LOGIN_URL = os.getenv("LOGIN_URL")
+EMAIL = os.getenv("EMAIL")
+PASSWORD = os.getenv("PASSWORD")
+TOKEN = os.getenv("TOKEN")
+SESSION_ID = os.getenv("SESSION_ID")
 
 session = requests.Session()  # Persistent session
 session.cookies.set("PHPSESSID", SESSION_ID)
