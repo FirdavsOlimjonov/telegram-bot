@@ -122,50 +122,50 @@ async def update_admin_expiration(user_id):
 
     return f"🔄 Admin ID {user_id} expiration extended to {new_expiration.strftime('%Y-%m-%d')}"
 
-
-# Check expired admins and notify them
-async def check_expired_admins(bot):
-    async with pool.acquire() as conn:
-        now = datetime.now(UTC)
-        warning_time = now + timedelta(days=3)  # Warn 3 days before expiration
-
-        # Find admins whose expiration date is within the next 3 days
-        warning_admins = await conn.fetch("""
-            SELECT id, name, expiration_date 
-            FROM admins 
-            WHERE expiration_date BETWEEN NOW() AND $1
-        """, warning_time)
-
-        for record in warning_admins:
-            admin_id = record["id"]
-            expiration_date = record["expiration_date"].strftime("%Y-%m-%d %H:%M:%S")
-
-            try:
-                await bot.send_message(
-                    admin_id,
-                    f"⚠️ Your admin access will expire on {expiration_date}. Please contact support to renew."
-                )
-            except Exception as e:
-                print(f"Error sending expiration warning to {admin_id}: {e}")
-
-        # Find expired admins
-        expired_admins = await conn.fetch("""
-            SELECT id, name, expiration_date 
-            FROM admins 
-            WHERE expiration_date < NOW()
-        """)
-
-        if expired_admins:
-            expired_list = "\n".join(
-                [
-                    f"👤 {record['name']} (ID: {record['id']}) - Expired on {record['expiration_date'].strftime('%Y-%m-%d %H:%M:%S')}"
-                    for record in expired_admins]
-            )
-
-            message = f"🚨 The following admins have expired:\n\n{expired_list}"
-
-            try:
-                for admId in ADMIN_ID:
-                    await bot.send_message(admId, message)  # Notify main admin
-            except Exception as e:
-                print(f"Error sending expired admin list: {e}")
+#
+# # Check expired admins and notify them
+# async def check_expired_admins(bot):
+#     async with pool.acquire() as conn:
+#         now = datetime.now(UTC)
+#         warning_time = now + timedelta(days=3)  # Warn 3 days before expiration
+#
+#         # Find admins whose expiration date is within the next 3 days
+#         warning_admins = await conn.fetch("""
+#             SELECT id, name, expiration_date
+#             FROM admins
+#             WHERE expiration_date BETWEEN NOW() AND $1
+#         """, warning_time)
+#
+#         for record in warning_admins:
+#             admin_id = record["id"]
+#             expiration_date = record["expiration_date"].strftime("%Y-%m-%d %H:%M:%S")
+#
+#             try:
+#                 await bot.send_message(
+#                     admin_id,
+#                     f"⚠️ Your admin access will expire on {expiration_date}. Please contact support to renew."
+#                 )
+#             except Exception as e:
+#                 print(f"Error sending expiration warning to {admin_id}: {e}")
+#
+#         # Find expired admins
+#         expired_admins = await conn.fetch("""
+#             SELECT id, name, expiration_date
+#             FROM admins
+#             WHERE expiration_date < NOW()
+#         """)
+#
+#         if expired_admins:
+#             expired_list = "\n".join(
+#                 [
+#                     f"👤 {record['name']} (ID: {record['id']}) - Expired on {record['expiration_date'].strftime('%Y-%m-%d %H:%M:%S')}"
+#                     for record in expired_admins]
+#             )
+#
+#             message = f"🚨 The following admins have expired:\n\n{expired_list}"
+#
+#             try:
+#                 for admId in ADMIN_ID:
+#                     await bot.send_message(admId, message)  # Notify main admin
+#             except Exception as e:
+#                 print(f"Error sending expired admin list: {e}")
