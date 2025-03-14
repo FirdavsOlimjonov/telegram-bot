@@ -2,7 +2,6 @@ import os
 from datetime import datetime, timedelta, timezone
 
 import asyncpg
-import asyncio
 import pytz
 from dotenv import load_dotenv
 
@@ -16,33 +15,13 @@ ADMIN_ID = {626105641, 487479968}
 
 # Define UTC timezone
 UTC = pytz.utc
-pool_lock = asyncio.Lock()
 
 
 # Initialize the database pool
 async def create_pool():
     global pool
-    async with pool_lock:
-        if pool is None:
-            try:
-                pool = await asyncpg.create_pool(
-                    DATABASE_URL,
-                    min_size=1,
-                    max_size=10,
-                    timeout=60,
-                    command_timeout=60,
-                    max_inactive_connection_lifetime=300
-                )
-            except Exception as e:
-                print(f"❌ Database pool creation failed: {e}")
-                pool = None  # Prevent broken pool references
-
-
-async def close_pool():
-    global pool
-    if pool:
-        await pool.close()
-        pool = None
+    if pool is None:  # Prevent duplicate pools
+        pool = await asyncpg.create_pool(DATABASE_URL)
 
 
 # Initialize the database (Ensure table & default admin exists)
@@ -70,32 +49,23 @@ async def init_db():
 
 # Check if a user is an admin and not expired
 async def is_admin(user_id):
-    if pool is None:
-        await create_pool()  # Ensure pool exists
-
     async with pool.acquire() as conn:
-        return await conn.fetchval("""
-            SELECT EXISTS (
-                SELECT 1 FROM admins 
-                WHERE id = $1 AND expiration_date > NOW()
-            )
-        """, user_id)
+        result = await conn.fetchrow("SELECT expiration_date FROM admins WHERE id = $1", user_id)
+        if result:
+            expiration_date = result["expiration_date"]
+            if expiration_date > datetime.now(UTC):  # Check if admin is still valid
+                return True
+        return False  # Admin expired or does not exist
 
 
 # Remove an admin
 async def remove_admin(user_id):
-    if pool is None:
-        await create_pool()  # Ensure pool exists
-
     async with pool.acquire() as conn:
         await conn.execute("DELETE FROM admins WHERE id = $1", user_id)
 
 
 # Add a new admin with an expiration date (now + 1 month)
 async def add_admin(user_id, name):
-    if pool is None:
-        await create_pool()  # Ensure pool exists
-
     if user_id in ADMIN_ID:
         expiration_date = datetime(9999, 12, 31)  # Unlimited expiration for special admin
     else:
@@ -112,9 +82,6 @@ async def add_admin(user_id, name):
 
 # Get all active admins (not expired)
 async def get_all_admins():
-    if pool is None:
-        await create_pool()  # Ensure pool exists
-
     async with pool.acquire() as conn:
         result = await conn.fetch("""
             SELECT id, name, expiration_date 
@@ -127,9 +94,6 @@ async def get_all_admins():
 
 # Get admin details by user ID
 async def get_admin_by_id(user_id):
-    if pool is None:
-        await create_pool()  # Ensure pool exists
-
     async with pool.acquire() as conn:
         result = await conn.fetchrow("""
             SELECT id, name, expiration_date 
@@ -148,9 +112,6 @@ async def get_admin_by_id(user_id):
 
 # Extend admin expiration (Only ADMIN_ID can use this)
 async def update_admin_expiration(user_id):
-    if pool is None:
-        await create_pool()  # Ensure pool exists
-
     new_expiration = datetime.now(UTC) + timedelta(days=30)  # Extend by 1 month
     async with pool.acquire() as conn:
         await conn.execute("""
