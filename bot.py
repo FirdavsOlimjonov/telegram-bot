@@ -10,7 +10,6 @@ from aiogram.exceptions import TelegramNetworkError
 from bs4 import BeautifulSoup
 
 from config import TOKEN
-from database import get_all_admins, init_db
 from handler import router
 
 # Enable logging
@@ -31,19 +30,25 @@ SESSION_ID = os.getenv("SESSION_ID")
 session = requests.Session()  # Persistent session
 session.cookies.set("PHPSESSID", SESSION_ID)
 last_login_attempt = 0
-login_interval = 600  # 20 minutes in seconds
+login_interval = 600  # 10 minutes in seconds
 
 # Define the UTC+5 timezone
-UTC = pytz.utc
-UTC_PLUS_5 = pytz.timezone("Asia/Yekaterinburg")  # Example for UTC+5
+UTC_PLUS_5 = pytz.timezone("Asia/Yekaterinburg")
 
-# Set to track already sent Load IDs
-sent_load_ids = set()
-previous_data = None
-ADMIN_ID = {626105641, 487479968}
+# Admins List (Static)
+admins = [
+    {'id': 1392048770, 'name': '@nickprogresive'},
+    {'id': 626105641, 'name': '@admin1'},
+    {'id': 487479968, 'name': '@admin2'}
+]
+
+ADMIN_ID = {626105641, 487479968}  # Super admins
+sent_load_ids = set()  # Track already sent Load IDs
+previous_data = None  # Store last fetched data
 
 
 def fetch_website_data():
+    """Fetch data from the website and handle login if necessary."""
     global last_login_attempt, session
 
     current_time = time.time()
@@ -128,9 +133,6 @@ async def monitor_website():
         elif current_data != previous_data:
             logging.info("🚨 Website update detected! Sending notifications...")
 
-            admins = await get_all_admins()
-            admin_ids = [admin['id'] for admin in admins]
-
             new_messages = format_text_table(current_data)
             logging.info(f"Formatted Messages: {new_messages}")
 
@@ -140,17 +142,16 @@ async def monitor_website():
                     continue
 
                 load_id, msg = item
-                # logging.info(f"Processing Load ID: {load_id}")
 
                 if load_id not in sent_load_ids:
-                    for admin_id in admin_ids:
-                        if admin_id in ADMIN_ID:
+                    for admin in admins:
+                        if admin["id"] in ADMIN_ID:
                             continue
                         try:
-                            await bot.send_message(chat_id=admin_id, text=msg, parse_mode="Markdown")
-                            logging.info(f"✅ Sent update to admin {admin_id}")
+                            await bot.send_message(chat_id=admin["id"], text=msg, parse_mode="Markdown")
+                            logging.info(f"✅ Sent update to admin {admin['id']}")
                         except Exception as e:
-                            logging.error(f"❌ Error sending to {admin_id}: {e}")
+                            logging.error(f"❌ Error sending to {admin['id']}: {e}")
                     sent_load_ids.add(load_id)
 
             previous_data = current_data
@@ -164,53 +165,23 @@ async def set_default_commands(botsetter: Bot):
     """Set the default menu buttons in the Telegram bot."""
     commands = [
         types.BotCommand(command="start", description="Start the bot"),
-        # types.BotCommand(command="stop", description="Stop the bot"),
-        # types.BotCommand(command="startmonitoring", description="Start the monitoring site"),
-        # types.BotCommand(command="stopmonitoring", description="Stop the monitoring site"),
     ]
     await botsetter.set_my_commands(commands)
 
 
 async def notify_admins(error_message):
     """Notify all admins about a critical bot error."""
-    admins = await get_all_admins()
-    admin_ids = [admin['id'] for admin in admins]
-
-    for admin_id in admin_ids:
+    for admin in admins:
         try:
-            await bot.send_message(admin_id, f"🚨 Bot Error:\n\n{error_message}")
+            await bot.send_message(admin["id"], f"🚨 Bot Error:\n\n{error_message}")
         except Exception as e:
-            logging.error(f"❌ Failed to notify admin {admin_id}: {e}")
-
-
-# async def scheduled_admin_check():
-#     while True:
-#         await check_expired_admins(bot)
-#         await asyncio.sleep(86400)  # 24 hours
-
-
-# def exit_program():
-#     print("Exiting the program...")
-#     sys.exit(0)
-
-
-# @router.message(Command("clear"))
-# async def remove_admin_handler(message: Message):
-#     """Handles the /clear command."""
-#     if message.from_user.id not in ADMIN_ID:
-#         await message.answer("You are not authorized to use this command.")
-#         return
-#
-#     sent_load_ids = set()
+            logging.error(f"❌ Failed to notify admin {admin['id']}: {e}")
 
 
 async def main():
-    """Initialize the bot, database, and start monitoring."""
-    await init_db()
+    """Initialize the bot and start monitoring."""
     await set_default_commands(bot)  # ✅ Set menu here
     dp.include_router(router)
-
-    # asyncio.create_task(scheduled_admin_check())  # Start expiration checks
 
     # Start monitoring the website
     asyncio.create_task(monitor_website())
