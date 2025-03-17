@@ -16,6 +16,7 @@ admins = [
     {'id': 1079500211, 'name': '@jaywesttt', 'expiration_date': datetime(2025, 4, 10)},
 ]
 
+
 @router.message(Command("start"))
 async def start_handler(message: Message):
     """Handles the /start command and sets up admin menu."""
@@ -38,6 +39,7 @@ async def start_handler(message: Message):
             )
         else:
             await message.answer("You are not an admin.")
+
 
 @router.message(Command("addadmin"))
 async def add_admin_handler(message: Message):
@@ -62,6 +64,7 @@ async def add_admin_handler(message: Message):
     admins.append({'id': new_admin_id, 'name': new_admin_name, 'expiration_date': expiration_date})
     await message.answer(f"✅ User {new_admin_id} ('{new_admin_name}') added as admin.")
 
+
 @router.message(Command("removeadmin"))
 async def remove_admin_handler(message: Message):
     """Handles the /removeadmin command."""
@@ -75,13 +78,21 @@ async def remove_admin_handler(message: Message):
         return
 
     admin_id = int(args[1])
+
+    # Prevent removing the last admin
     if len(admins) == 1 and any(admin['id'] == admin_id for admin in admins):
         await message.answer("❌ You cannot remove the last admin!")
         return
 
-    global admins
-    admins = [admin for admin in admins if admin['id'] != admin_id]
-    await message.answer(f"✅ User {admin_id} removed as admin.")
+    # Remove the admin
+    for admin in admins:
+        if admin["id"] == admin_id:
+            admins.remove(admin)
+            await message.answer(f"✅ User {admin_id} removed as admin.")
+            return
+
+    await message.answer(f"⚠️ User {admin_id} not found in the admin list.")
+
 
 @router.message(lambda message: message.text.lower().strip() == "list admins")
 async def list_admins_handler(message: Message):
