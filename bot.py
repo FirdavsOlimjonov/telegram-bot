@@ -2,6 +2,7 @@ import asyncio
 import logging
 import time
 import os
+from datetime import datetime
 
 import pytz
 import requests
@@ -35,11 +36,11 @@ login_interval = 600  # 10 minutes in seconds
 # Define the UTC+5 timezone
 UTC_PLUS_5 = pytz.timezone("Asia/Yekaterinburg")
 
-# Admins List (Static)
 admins = [
-    {'id': 1392048770, 'name': '@nickprogresive'},
-    {'id': 626105641, 'name': '@admin1'},
-    {'id': 487479968, 'name': '@admin2'}
+    {'id': 1336348253, 'name': '@AlexCole_1', 'expiration_date': datetime(2025, 4, 10)},
+    {'id': 7216398031, 'name': '@adam_griggs', 'expiration_date': datetime(2025, 4, 10)},
+    {'id': 5015197070, 'name': '@Zach_Progressive', 'expiration_date': datetime(2025, 4, 10)},
+    {'id': 1079500211, 'name': '@jaywesttt', 'expiration_date': datetime(2025, 4, 10)},
 ]
 
 ADMIN_ID = {626105641, 487479968}  # Super admins
