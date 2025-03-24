@@ -31,7 +31,7 @@ SESSION_ID = os.getenv("SESSION_ID")
 session = requests.Session()  # Persistent session
 session.cookies.set("PHPSESSID", SESSION_ID)
 last_login_attempt = 0
-login_interval = 600  # 10 minutes in seconds
+login_interval = 1000  # 10 minutes in seconds
 
 # Define the UTC+5 timezone
 UTC_PLUS_5 = pytz.timezone("Asia/Yekaterinburg")
