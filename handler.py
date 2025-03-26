@@ -16,6 +16,7 @@ admins = [
     {'id': 1079500211, 'name': '@jaywesttt', 'expiration_date': datetime(2025, 4, 10)},
     {'id': 1018263860, 'name': '@click_onit', 'expiration_date': datetime(2025, 4, 20)},
     {'id': 1392048770, 'name': '@nickprogressivecarriers', 'expiration_date': datetime(2025, 4, 20)},
+    {'id': 7321136043, 'name': '@Timthacook', 'expiration_date': datetime(2025, 4, 26)},
 ]
 
 
